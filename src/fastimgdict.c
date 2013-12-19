@@ -6,7 +6,7 @@
 #include<stdlib.h>
 #include<png.h>
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   char sig[8];
   unsigned long width, height;
@@ -14,6 +14,7 @@ int main(int argc, char *argv[])
   static png_infop info_ptr;
   png_byte color_type;
   png_byte bit_depth;
+  png_bytep* row_pointers;
 
   FILE* fp = fopen("data/T03.png", "rb");
   if (!fp) {
@@ -56,9 +57,24 @@ int main(int argc, char *argv[])
 
   printf("Read PNG %dx%d\n", width, height);
 
+  color_type = png_get_color_type(png_ptr, info_ptr);
+  bit_depth = png_get_bit_depth(png_ptr, info_ptr);
+
+  printf("Bit depth %d, colour type %d\n", bit_depth, color_type);
+
+  if (setjmp(png_jmpbuf(png_ptr))) {
+    fprintf(stderr, "Error during read image\n");
+    png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+    exit(2);
+  }
+
+  row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * height);
+  for (int y=0; y<height; y++) {
+    row_pointers[y] = (png_byte*) malloc(png_get_rowbytes(png_ptr, info_ptr));
+  }
+
+  png_read_image(png_ptr, row_pointers);
   
-
-
 
   return 0;
 }
