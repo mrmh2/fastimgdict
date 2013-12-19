@@ -6,6 +6,30 @@
 #include<stdlib.h>
 #include<png.h>
 
+typedef struct {
+  int R;
+  int G;
+  int B;
+} rgb_val;
+
+rgb_val get_rgb_val(png_bytep* row_pointers, int x, int y)
+{
+  rgb_val rgb;
+
+  int offset = x * 3;
+
+  rgb.R = row_pointers[y][offset];
+  rgb.G = row_pointers[y][offset + 1];
+  rgb.B = row_pointers[y][offset + 2];
+
+  return rgb;
+}
+
+int convert_rgb_val(rgb_val rgb)
+{
+  return 256 * 256 * rgb.R + 256 * rgb.G + rgb.B;
+}
+
 int main(int argc, char* argv[])
 {
   char sig[8];
@@ -74,7 +98,11 @@ int main(int argc, char* argv[])
   }
 
   png_read_image(png_ptr, row_pointers);
-  
+
+  rgb_val rgb = get_rgb_val(row_pointers, 300, 500);
+
+  printf("Converted: %d\n", convert_rgb_val(rgb));
+  //printf("%d %d %d\n", rgb.R, rgb.G, rgb.B);
 
   return 0;
 }
