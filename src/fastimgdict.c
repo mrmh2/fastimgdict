@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 {
   char sig[8];
 
-  FILE* fp = fopen("T03.png", "rb");
+  FILE* fp = fopen("data/T03.png", "rb");
   if (!fp) {
     fprintf(stderr, "Failed to open image file\n");
     exit(2);
