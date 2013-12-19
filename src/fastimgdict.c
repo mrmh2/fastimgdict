@@ -73,31 +73,10 @@ int main(int argc, char* argv[])
 
   png_init_io(png_ptr, fp);
   png_set_sig_bytes(png_ptr, 8);
-  
-  png_read_info(png_ptr, info_ptr);
-
+  png_read_png(png_ptr, info_ptr, 0, NULL);
   width = png_get_image_width(png_ptr, info_ptr);
   height = png_get_image_height(png_ptr, info_ptr);
-
-  printf("Read PNG %dx%d\n", width, height);
-
-  color_type = png_get_color_type(png_ptr, info_ptr);
-  bit_depth = png_get_bit_depth(png_ptr, info_ptr);
-
-  printf("Bit depth %d, colour type %d\n", bit_depth, color_type);
-
-  if (setjmp(png_jmpbuf(png_ptr))) {
-    fprintf(stderr, "Error during read image\n");
-    png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-    exit(2);
-  }
-
-  row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * height);
-  for (int y=0; y<height; y++) {
-    row_pointers[y] = (png_byte*) malloc(png_get_rowbytes(png_ptr, info_ptr));
-  }
-
-  png_read_image(png_ptr, row_pointers);
+  row_pointers = png_get_rows(png_ptr, info_ptr);
 
   rgb_val rgb = get_rgb_val(row_pointers, 300, 500);
 
