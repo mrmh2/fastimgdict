@@ -30,17 +30,15 @@ int convert_rgb_val(rgb_val rgb)
   return 256 * 256 * rgb.R + 256 * rgb.G + rgb.B;
 }
 
-int main(int argc, char* argv[])
+void load_png(char *filename, png_structp* in_png_ptr, png_infop* in_info_ptr)
 {
-  char sig[8];
-  unsigned long width, height;
-  static png_structp png_ptr;
-  static png_infop info_ptr;
-  png_byte color_type;
-  png_byte bit_depth;
-  png_bytep* row_pointers;
+  /* load a PNG file */
 
-  FILE* fp = fopen("data/T03.png", "rb");
+  char sig[8];
+  png_structp png_ptr;
+  png_infop info_ptr;
+
+  FILE* fp = fopen(filename, "rb");
   if (!fp) {
     fprintf(stderr, "Failed to open image file\n");
     exit(2);
@@ -74,6 +72,22 @@ int main(int argc, char* argv[])
   png_init_io(png_ptr, fp);
   png_set_sig_bytes(png_ptr, 8);
   png_read_png(png_ptr, info_ptr, 0, NULL);
+
+  *in_png_ptr = png_ptr;
+  *in_info_ptr = info_ptr;
+}
+
+int main(int argc, char* argv[])
+{
+
+  unsigned long width, height;
+  static png_structp png_ptr;
+  static png_infop info_ptr;
+  png_byte color_type;
+  png_byte bit_depth;
+  png_bytep* row_pointers;
+
+  load_png("data/T03.png", &png_ptr, &info_ptr);
   width = png_get_image_width(png_ptr, info_ptr);
   height = png_get_image_height(png_ptr, info_ptr);
   row_pointers = png_get_rows(png_ptr, info_ptr);
