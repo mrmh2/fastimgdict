@@ -8,6 +8,8 @@
 #include<vector>
 #include<unordered_map>
 
+#include<python2.7/Python.h>
+
 typedef struct {
   int R;
   int G;
@@ -86,22 +88,17 @@ typedef struct {
   int y;
 } c2d;
 
-int main(int argc, char** argv)
+std::unordered_map <int, std::vector<c2d>> 
+convert_png(png_structp png_ptr, png_infop info_ptr)
 {
-
   unsigned long width, height;
-  static png_structp png_ptr;
-  static png_infop info_ptr;
-  png_byte color_type;
-  png_byte bit_depth;
-  png_bytep* row_pointers;
-  rgb_val rgb;
+  png_bytep *row_pointers;
   unsigned long val;
   c2d current_xy;
 
-  load_png("data/T13.png", &png_ptr, &info_ptr);
   width = png_get_image_width(png_ptr, info_ptr);
   height = png_get_image_height(png_ptr, info_ptr);
+
   row_pointers = png_get_rows(png_ptr, info_ptr);
 
   std::unordered_map <int, std::vector<c2d>> m;
@@ -119,9 +116,40 @@ int main(int argc, char** argv)
 
     }
 
+  return m;
+
+}
+
+std::unordered_map <int, std::vector<c2d>> 
+load_and_convert_png(const char *filename)
+{
+  static png_structp png_ptr;
+  static png_infop info_ptr;
+
+  load_png(filename, &png_ptr, &info_ptr);
+
+  std::unordered_map <int, std::vector<c2d>> m = convert_png(png_ptr, info_ptr);
+
+  return m;
+}
+
+int main(int argc, char** argv)
+{
+  const char *filename = "data/T13.png";
+  unsigned long count = 0;
+
+  std::unordered_map <int, std::vector<c2d>> m = load_and_convert_png(filename);
+  
   for (auto kv : m) {
     printf("%d: %d\n", kv.first, kv.second.size());
+    for (auto c : kv.second) {
+      int o = c.x + c.y;
+      count += o;
+      Py_BuildValue("ii", 10, 10);
+    }
   }
+
+  printf("%d\n", count);
 
 
   return 0;
