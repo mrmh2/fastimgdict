@@ -104,24 +104,25 @@ int main(int argc, char** argv)
   height = png_get_image_height(png_ptr, info_ptr);
   row_pointers = png_get_rows(png_ptr, info_ptr);
 
-  std::unordered_map <int, int> m;
+  std::unordered_map <int, std::vector<c2d>> m;
 
   for (int y=0; y<height; y++) 
     for (int x=0; x<width; x++) {
       val = convert_rgb_val(get_rgb_val(row_pointers, x, y));
       current_xy.x = x;
       current_xy.y = y;
-      if (m.count(val) == 0) m[val] = 0;
-      else m[val]++;
+      if (!m.count(val)) {
+	m[val] = std::vector<c2d>();
+      } else {
+	m[val].push_back(current_xy);
+      }
+
     }
 
-  rgb = get_rgb_val(row_pointers, 300, 500);
-  printf("%d %d %d\n", rgb.R, rgb.G, rgb.B);
-  printf("Converted: %d\n", convert_rgb_val(rgb));
-
   for (auto kv : m) {
-    printf("%d: %d\n", kv.first, kv.second);
+    printf("%d: %d\n", kv.first, kv.second.size());
   }
+
 
   return 0;
 }
