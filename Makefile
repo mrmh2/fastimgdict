@@ -1,7 +1,7 @@
-CFLAGS=-std=c99
+CFLAGS=-O3 -std=c++11
 
 bin/fid: src/fastimgdict.c
-	gcc $(CFLAGS) src/fastimgdict.c -o bin/fid -lpng
+	g++ $(CFLAGS) src/fastimgdict.c -o bin/fid -lpng
 
 clean:
 	rm -f bin/fid

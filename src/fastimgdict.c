@@ -5,6 +5,8 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<png.h>
+#include<vector>
+#include<unordered_map>
 
 typedef struct {
   int R;
@@ -25,16 +27,16 @@ rgb_val get_rgb_val(png_bytep* row_pointers, int x, int y)
   return rgb;
 }
 
-int convert_rgb_val(rgb_val rgb)
+unsigned long convert_rgb_val(rgb_val rgb)
 {
   return 256 * 256 * rgb.R + 256 * rgb.G + rgb.B;
 }
 
-void load_png(char *filename, png_structp* in_png_ptr, png_infop* in_info_ptr)
+void load_png(const char *filename, png_structp* in_png_ptr, png_infop* in_info_ptr)
 {
   /* load a PNG file */
 
-  char sig[8];
+  //png_const_bytep sig;
   png_structp png_ptr;
   png_infop info_ptr;
 
@@ -44,11 +46,13 @@ void load_png(char *filename, png_structp* in_png_ptr, png_infop* in_info_ptr)
     exit(2);
   }
 
+  /*
   fread(sig, 1, 8, fp);
   if (!png_check_sig(sig, 8)) {
     fprintf(stderr, "File is not a valid PNG file\n");
     exit(2);
   }
+  */
 
   png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
   if( !png_ptr) {
@@ -70,14 +74,19 @@ void load_png(char *filename, png_structp* in_png_ptr, png_infop* in_info_ptr)
   }
 
   png_init_io(png_ptr, fp);
-  png_set_sig_bytes(png_ptr, 8);
+  //png_set_sig_bytes(png_ptr, 8);
   png_read_png(png_ptr, info_ptr, 0, NULL);
 
   *in_png_ptr = png_ptr;
   *in_info_ptr = info_ptr;
 }
 
-int main(int argc, char* argv[])
+typedef struct {
+  int x;
+  int y;
+} c2d;
+
+int main(int argc, char** argv)
 {
 
   unsigned long width, height;
@@ -86,16 +95,33 @@ int main(int argc, char* argv[])
   png_byte color_type;
   png_byte bit_depth;
   png_bytep* row_pointers;
+  rgb_val rgb;
+  unsigned long val;
+  c2d current_xy;
 
-  load_png("data/T03.png", &png_ptr, &info_ptr);
+  load_png("data/T13.png", &png_ptr, &info_ptr);
   width = png_get_image_width(png_ptr, info_ptr);
   height = png_get_image_height(png_ptr, info_ptr);
   row_pointers = png_get_rows(png_ptr, info_ptr);
 
-  rgb_val rgb = get_rgb_val(row_pointers, 300, 500);
+  std::unordered_map <int, int> m;
 
+  for (int y=0; y<height; y++) 
+    for (int x=0; x<width; x++) {
+      val = convert_rgb_val(get_rgb_val(row_pointers, x, y));
+      current_xy.x = x;
+      current_xy.y = y;
+      if (m.count(val) == 0) m[val] = 0;
+      else m[val]++;
+    }
+
+  rgb = get_rgb_val(row_pointers, 300, 500);
+  printf("%d %d %d\n", rgb.R, rgb.G, rgb.B);
   printf("Converted: %d\n", convert_rgb_val(rgb));
-  //printf("%d %d %d\n", rgb.R, rgb.G, rgb.B);
+
+  for (auto kv : m) {
+    printf("%d: %d\n", kv.first, kv.second);
+  }
 
   return 0;
 }
